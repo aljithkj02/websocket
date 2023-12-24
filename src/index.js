@@ -1,11 +1,11 @@
 import { server as WebSocketServer } from "websocket";
 import http from 'node:http'
 import { DB } from "./store.js";
+import { registerUser, sendMessage } from "./controller.js";
 
 const server = http.createServer((req, res) => {
     console.log((new Date()) , "Recieved request for", req.url);
-    // res.write(DB);
-    res.end(JSON.stringify(DB));
+    res.end(JSON.stringify(DB.messages));
 })
 
 server.listen(3000, () => {
@@ -43,8 +43,9 @@ wsServer.on('request', (req) => {
 })
 
 const functionHandler = (connection, message) => {
-    console.log({ message })
-    if(message.type === 'SEND_MESSAGE') {
-        connection.sendUTF(JSON.stringify(message))
-    } 
+    if(message.type === 'REGISTER') {
+        registerUser(message.payload, connection);
+    } else if( message.type === 'SEND_MESSAGE') {
+        sendMessage(message.payload);
+    }
 }
